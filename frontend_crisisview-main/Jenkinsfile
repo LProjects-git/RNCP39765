@@ -25,12 +25,14 @@ pipeline {
         stage('Static Analysis (Sonar)') {
             steps {
                 dir('frontend_crisisview-main') {
-                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                        sh "npx sonar-scanner \
-                        -Dsonar.projectKey=crisiview-frontend \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://host.docker.internal:9000 \
-                        -Dsonar.login=${SONAR_TOKEN}"
+                    withSonarQubeEnv('SonarQube') {
+                        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                            sh "npx sonar-scanner \
+                            -Dsonar.projectKey=crisiview-frontend \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://host.docker.internal:9000 \
+                            -Dsonar.login=${SONAR_TOKEN}"
+                        }
                     }
                     waitForQualityGate abortPipeline: true
                 }
