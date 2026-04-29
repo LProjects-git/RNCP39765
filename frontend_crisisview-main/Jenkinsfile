@@ -9,8 +9,11 @@ pipeline {
     }
     stages {
         stage('Checkout') {
-            steps { checkout scm }
+            steps { 
+                checkout scm 
+            }
         }
+        
         stage('Build & Install') {
             steps {
                 dir('frontend_crisisview-main') { 
@@ -18,6 +21,30 @@ pipeline {
                 }
             }
         }
+
+        stage('Automated Tests') {
+            steps {
+                dir('frontend_crisisview-main') {
+                    sh 'npm test'
+                }
+            }
+        }
+
+        stage('Static Analysis (Sonar)') {
+            steps {
+                dir('frontend_crisisview-main') {
+                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                        sh "npx sonar-scanner \
+                        -Dsonar.projectKey=crisiview-frontend \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://host.docker.internal:9000 \
+                        -Dsonar.login=${SONAR_TOKEN}"
+                    }
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Build Artifact') {
             steps {
                 dir('frontend_crisisview-main') {
@@ -25,9 +52,10 @@ pipeline {
                 }
             }
         }
+
         stage('Docker Packaging') {
             steps {
-                echo "Build de l'image crisiview-front..."
+                echo "Build de l'image ${DOCKER_IMAGE} terminée avec succès."
             }
         }
     }

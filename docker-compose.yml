@@ -1,0 +1,42 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: crisiview_db
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-pready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crisiview-net
+
+  api:
+    build: ./api_crisiview-main
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_NAME=crisiview_db
+      - DB_PORT=3306
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    networks:
+      - crisiview-net
+
+  frontend:
+    build: ./frontend_crisisview-main
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - crisiview-net
+
+networks:
+  crisiview-net:
+    driver: bridge
