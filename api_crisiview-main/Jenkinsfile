@@ -25,19 +25,21 @@ pipeline {
                 }
             }
         }
-        stage('Static Analysis (Sonar)') {
-    steps {
-        dir('api_crisiview-main') {
-            withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                sh "npx sonar-scanner \
-                -Dsonar.projectKey=crisiview-api \
-                -Dsonar.sources=. \
-                -Dsonar.host.url=http://host.docker.internal:9000 \
-                -Dsonar.login=${SONAR_TOKEN}"
+    stage('Static Analysis (Sonar)') {
+            steps {
+                dir('api_crisiview-main') {
+                    withSonarQubeEnv('SonarQube') {
+                        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                            sh "npx sonar-scanner \
+                            -Dsonar.projectKey=crisiview-api \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://host.docker.internal:9000 \
+                            -Dsonar.login=${SONAR_TOKEN}"
+                        }
+                    }
+                    waitForQualityGate abortPipeline: true
+                }
             }
-        waitForQualityGate abortPipeline: true
-        }
-    }
         }
         stage('Docker Packaging') {
             steps {
