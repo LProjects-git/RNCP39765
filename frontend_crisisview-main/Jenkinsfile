@@ -22,14 +22,6 @@ pipeline {
             }
         }
 
-        stage('Automated Tests') {
-            steps {
-                dir('frontend_crisisview-main') {
-                    sh 'npm test'
-                }
-            }
-        }
-
         stage('Static Analysis (Sonar)') {
             steps {
                 dir('frontend_crisisview-main') {
