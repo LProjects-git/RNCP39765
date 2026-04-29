@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') { steps { checkout scm } }
+        stage('Install') { steps { sh 'npm install' } }
+        stage('Tests') { steps { sh 'npm test' } }
+        stage('SonarQube Analysis') { steps { echo 'Analyse Sonar...' } }
+        stage('Build & Push') { steps { echo 'Docker build...' } }
+        stage('Delivery (Staging)') { steps { sh 'docker-compose up -d' } }
+    }
+}
