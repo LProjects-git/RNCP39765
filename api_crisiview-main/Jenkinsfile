@@ -26,9 +26,17 @@ pipeline {
             }
         }
         stage('Static Analysis (Sonar)') {
-            steps {
-                echo "Lancement de l'analyse Sonar sur l'API..."
+    steps {
+        dir('api_crisiview-main') {
+            withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                sh "npx sonar-scanner \
+                -Dsonar.projectKey=crisiview-api \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=http://host.docker.internal:9000 \
+                -Dsonar.login=${SONAR_TOKEN}"
             }
+        }
+    }
         }
         stage('Docker Packaging') {
             steps {
